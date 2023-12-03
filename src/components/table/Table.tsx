@@ -25,8 +25,8 @@ const  Table = () => {
     const minDate = dayjs("2019-12-31");
     const maxDate = dayjs('2020-12-14') ;
     let rows: GridRowsProp = [];
-    console.log(dayjs(vStart).format('DD/MM/YYYY'), vEnd, "timeS");
-    console.log(vEnd, "timeE")
+    console.log(dayjs(vStart).format('DD/MM/YYYY'),"timeS");
+    console.log(dayjs(vEnd).format('DD/MM/YYYY'), "timeE")
 
       
     const columns: GridColDef[] = [
@@ -41,15 +41,15 @@ const  Table = () => {
     ];
 
 
-    useCallback(() => {
-        setTimeout(()=>{
-            makeTable(data);
-        },1000)
-        console.log("useCallback");
+    // useCallback(() => {
+    //     setTimeout(()=>{
+    //         makeTable(data);
+    //     },1000)
+    //     console.log("useCallback");
         
-    }, [vStart, vEnd]);
+    // }, [vStart, vEnd]);
 
-    const  makeTable = (dataSer: any) => {
+    const  makeTable = (dataSer: any, start: any, end: any) => {
 
         let countCases: number = 0;
         let countDeaths: number = 0;
@@ -60,16 +60,20 @@ const  Table = () => {
 
 
         if (dataSer !== undefined) {
+
+            const vStart = dayjs(start).format('YYYY/MM/DD');
+            const vEnd = dayjs(end).format('YYYY/MM/DD');
+
             record = dataSer.records;
             console.log(record, "record");
-            //Adding id
+            //Adding id---------------------------------
             record.forEach((item:any, i: any): any => {
                 item.id = i + 1;
             });
 
             const dateReg = record.filter((item:any, i: any): any => {
                 const [day, month, year] = item.dateRep.split('/');
-                return dayjs(`${year}-${month}-${day}`).isBetween('2020-01-31', '2020-11-14', 'day', '[]');
+                return dayjs(`${year}-${month}-${day}`).isBetween(`${vStart}`, `${vEnd}`, 'day', '[]');
             });
             console.log(dateReg, "dateReg");
             cntryAll = record.map((item: any) => {
@@ -85,7 +89,7 @@ const  Table = () => {
             
             
             for (const iterator of cntryAll) {
-                const array = record.filter( (elem: any) => {  
+                const array = dateReg.filter( (elem: any) => {  
                     return elem.countriesAndTerritories === iterator;  
                   });
                 // console.log(array, "array");
@@ -117,7 +121,7 @@ const  Table = () => {
 
     }
 
-    makeTable(data);
+    makeTable(data, vStart, vEnd);
 
     return(  
         <>  
