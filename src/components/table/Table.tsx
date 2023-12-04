@@ -1,12 +1,18 @@
 import "./Table.css";
 import { Link } from 'react-router-dom';
+import {Button, Container, Row, Col, Pagination, InputGroup, Form, DropdownButton, Dropdown  }from 'react-bootstrap';
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import useSWR, { mutate } from 'swr';
 import dayjs, { Dayjs } from 'dayjs';
 import * as isBetween from 'dayjs/plugin/isBetween';
 import { useState, useCallback, useEffect } from "react";
-import { DataGrid, GridRowsProp, GridColDef } from '@mui/x-data-grid';
+import { 
+        DataGrid, 
+        GridRowsProp, 
+        GridColDef,
+        GridToolbar  
+        } from '@mui/x-data-grid';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -30,24 +36,22 @@ const  Table = () => {
 
       
     const columns: GridColDef[] = [
-        { field: 'countriesAndTerritories', headerName: 'Страна', width: 150 },
-        { field: 'cases', headerName: 'Количество случаев', width: 250 },
-        { field: 'deaths', headerName: 'Количество смертей', width: 250 },
-        { field: 'casesAll', headerName: 'Количество случаев всего', width: 250 },
-        { field: 'deathsAll', headerName: 'Количество смертей всего', width: 250 },
+        { field: 'countriesAndTerritories', headerName: 'Страна', width: 200 },
+        { field: 'cases', headerName: 'Количество случаев', width: 200 },
+        { field: 'deaths', headerName: 'Количество смертей', width: 200 },
+        { field: 'casesAll', headerName: 'Количество случаев всего', width: 200 },
+        { field: 'deathsAll', headerName: 'Количество смертей всего', width: 200 },
         { field: 'Cumulative_number_for_14_days_of_COVID-19_cases_per_100000', 
         headerName: 'Количество случаев на 100000 жителей', width: 300 },
         { field: 'quantityDeath1000', headerName: 'Количество смертей на 1000 жителей', width: 300 }
     ];
 
 
-    // useCallback(() => {
-    //     setTimeout(()=>{
+    // useEffect(() => {
+    //     
     //         makeTable(data);
-    //     },1000)
-    //     console.log("useCallback");
         
-    // }, [vStart, vEnd]);
+    // }, []);
 
     const  makeTable = (dataSer: any, start: any, end: any) => {
 
@@ -125,40 +129,69 @@ const  Table = () => {
 
     return(  
         <>  
-            <div>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                    label="Controlled picker"
-                    value={vStart}
-                    format="DD-MM-YYYY"
-                    defaultValue={dayjs('2019-12-31')}//yyyy-mm-dd
-                    minDate={minDate}
-                    maxDate={maxDate}
-                    onChange={(newValue, context) =>{ 
-                        if (context.validationError == null) {
-                            setStart(newValue);
-                        }
-                    }}
-                    /> 
-                    <DatePicker
-                    label="Controlled picker"
-                    value={vEnd}
-                    format="DD-MM-YYYY"
-                    defaultValue={dayjs('2020-12-14')}
-                    minDate={minDate}
-                    maxDate={maxDate}
-                    onChange={(newValue, context) =>{ 
-                        if (context.validationError == null) {
-                            setEnd(newValue);
-                        }
-                    }}
-                    />
-                </LocalizationProvider>
-            </div>
-            <div style={{ height: 500, width: '100%'}}>
-                <DataGrid rows={rows} columns={columns} />
-            </div>
-
+            <Container style={{padding: "12px"}}>
+                <Row>
+                    <Col>
+                        <DropdownButton id="dropdown-basic-button" title="Dropdown button">
+                            <Dropdown.Item><Link to="/">Таблица</Link></Dropdown.Item>
+                            <Dropdown.Item><Link to="/function">График</Link></Dropdown.Item>
+                        </DropdownButton>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DatePicker
+                            label="Значение от"
+                            value={vStart}
+                            format="DD-MM-YYYY"
+                            defaultValue={dayjs('2019-12-31')}//yyyy-mm-dd
+                            minDate={minDate}
+                            maxDate={maxDate}
+                            onChange={(newValue, context) =>{ 
+                                if (context.validationError == null) {
+                                    setStart(newValue);
+                                }
+                            }}
+                            /> 
+                            <DatePicker
+                            label="Значение до"
+                            value={vEnd}
+                            format="DD-MM-YYYY"
+                            defaultValue={dayjs('2020-12-14')}
+                            minDate={minDate}
+                            maxDate={maxDate}
+                            onChange={(newValue, context) =>{ 
+                                if (context.validationError == null) {
+                                    setEnd(newValue);
+                                }
+                            }}
+                            />
+                        </LocalizationProvider>
+                    </Col>
+                    
+                </Row>
+                <Row>
+                    <Col>
+                        <div style={{ height: 500, width: '100%'}}>
+                            <DataGrid 
+                                // columnMenuClearIcon
+                                // quickFilterClearIcon
+                                rows={rows} 
+                                columns={columns}
+                                // disableExportSelector
+                                slots={{ toolbar: GridToolbar }}
+                                slotProps={{
+                                toolbar: {
+                                    showQuickFilter: true,
+                                },
+                                }}  
+                            />
+                        </div>
+                    </Col>
+                </Row>
+                
+            </Container>
         </>
       
     );
