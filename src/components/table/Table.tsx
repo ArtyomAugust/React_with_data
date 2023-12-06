@@ -11,7 +11,9 @@ import {
         DataGrid, 
         GridRowsProp, 
         GridColDef,
-        GridToolbar  
+        GridFilterItem,
+        GridFilterOperator,
+        GridToolbarFilterButton,  
         } from '@mui/x-data-grid';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -49,7 +51,7 @@ const  Table = () => {
 
     // useEffect(() => {
     //     
-    //         makeTable(data);
+    //         makeTable(data, vStart, vEnd);
         
     // }, []);
 
@@ -125,7 +127,24 @@ const  Table = () => {
 
     }
 
-    makeTable(data, vStart, vEnd);
+    const clearFilters = () => {
+        const input = document.querySelector("input[type='search']")as HTMLInputElement | null;
+        const filter = document.querySelector("div.MuiDataGrid-panel");
+// MuiInputBase-input MuiInput-input MuiInputBase-inputTypeSearch MuiInputBase-inputAdornedStart MuiInputBase-inputAdornedEnd css-c63i49-MuiInputBase-input-MuiInput-input
+// MuiPopper-root MuiDataGrid-panel css-n3z9fz-MuiPopper-root-MuiDataGrid-panel"
+        // input.innerHTML = "ss";
+
+        if (input != null) {
+            input.value = "";
+          
+        }
+
+        console.log(filter, "filter");
+        
+        
+    }
+
+    // makeTable(data, vStart, vEnd);
 
     return(  
         <>  
@@ -173,6 +192,11 @@ const  Table = () => {
                 </Row>
                 <Row>
                     <Col>
+                        <Button variant="outline-warning" onClick={()=> clearFilters()}>Очистить фильтры</Button>{' '}
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
                         <div style={{ height: 500, width: '100%'}}>
                             <DataGrid 
                                 // columnMenuClearIcon
@@ -180,10 +204,10 @@ const  Table = () => {
                                 rows={rows} 
                                 columns={columns}
                                 // disableExportSelector
-                                slots={{ toolbar: GridToolbar }}
+                                slots={{ toolbar: GridToolbarFilterButton }}
                                 slotProps={{
                                 toolbar: {
-                                    showQuickFilter: true,
+                                    showquickfilter: true,
                                 },
                                 }}  
                             />
