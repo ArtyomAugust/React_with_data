@@ -1,24 +1,25 @@
+/* eslint-disable no-loop-func */
 import "./Table.css";
 import { Link } from 'react-router-dom';
-import {Button, Container, Row, Col, Pagination, InputGroup, Form, DropdownButton, Dropdown  }from 'react-bootstrap';
+import {Button, Container, Row, Col, DropdownButton, Dropdown  }from 'react-bootstrap';
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import useSWR, { mutate } from 'swr';
 import dayjs, { Dayjs } from 'dayjs';
 import * as isBetween from 'dayjs/plugin/isBetween';
-import { useState, useCallback, useEffect } from "react";
-import { 
-        DataGrid, 
-        GridRowsProp, 
-        GridColDef,
-        GridFilterItem,
-        GridFilterOperator,
-        GridToolbarFilterButton,  
-        } from '@mui/x-data-grid';
+import { useState, useCallback, useMemo, useRef } from "react";
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-quartz.css';
+import { AgGridReact } from 'ag-grid-react';
+import {
+    ColDef,
+    IFilterPlaceholderFunctionParams,
+    INumberFilterParams,
+    ITextFilterParams,
+} from 'ag-grid-community';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { DateField } from '@mui/x-date-pickers/DateField';
 
 
 
@@ -27,33 +28,109 @@ const  Table = () => {
     const fetcher =(url: string )=> fetch(url).then(r => r.json())
     const { data, error, isLoading, mutate } = useSWR("https://opendata.ecdc.europa.eu/covid19/casedistribution/json/", fetcher);
     mutate(data);
+    const gridRef = useRef<AgGridReact>(null);
+    // const [isTime, setTime] = useLocalStorage('isTime', true);
     const [vStart, setStart] = useState<Dayjs | null>(dayjs('2019-12-31'));
     const [vEnd, setEnd] = useState<Dayjs | null>(dayjs('2020-12-14'));
 
     const minDate = dayjs("2019-12-31");
     const maxDate = dayjs('2020-12-14') ;
-    let rows: GridRowsProp = [];
+    let rows: any = [];
     console.log(dayjs(vStart).format('DD/MM/YYYY'),"timeS");
     console.log(dayjs(vEnd).format('DD/MM/YYYY'), "timeE")
 
-      
-    const columns: GridColDef[] = [
-        { field: 'countriesAndTerritories', headerName: 'Страна', width: 200 },
-        { field: 'cases', headerName: 'Количество случаев', width: 200 },
-        { field: 'deaths', headerName: 'Количество смертей', width: 200 },
-        { field: 'casesAll', headerName: 'Количество случаев всего', width: 200 },
-        { field: 'deathsAll', headerName: 'Количество смертей всего', width: 200 },
-        { field: 'Cumulative_number_for_14_days_of_COVID-19_cases_per_100000', 
-        headerName: 'Количество случаев на 100000 жителей', width: 300 },
-        { field: 'quantityDeath1000', headerName: 'Количество смертей на 1000 жителей', width: 300 }
+    const columns: ColDef[] = [
+        { 
+        headerName: 'Страна', 
+            field: 'countriesAndTerritories', 
+            width: 150, 
+            filter: 'agTextColumnFilter', 
+            floatingFilter: true,
+            filterParams: {
+                filterPlaceholder: 'Введите страну...',
+              } as ITextFilterParams, 
+        },
+        { 
+            headerName: 'Количество случаев', 
+            field: 'cases', 
+            width: 200 ,
+            filter: 'agNumberColumnFilter', 
+            floatingFilter: true,
+            filterParams: {
+                filterPlaceholder: 'Введите число...',
+              } as ITextFilterParams,  
+        },
+        { 
+            headerName: 'Количество смертей', 
+            field: 'deaths', 
+            width: 200 ,
+            filter: 'agNumberColumnFilter', 
+            floatingFilter: true, 
+            filterParams: {
+                filterPlaceholder: 'Введите число...',
+              } as ITextFilterParams,  
+        },
+        { 
+            headerName: 'Количество случаев всего', 
+            field: 'casesAll', 
+            width: 200 ,
+            filter: 'agNumberColumnFilter', 
+            floatingFilter: true,
+            filterParams: {
+                filterPlaceholder: 'Введите число...',
+              } as ITextFilterParams,  
+        },
+        { headerName: 'Количество смертей всего', 
+            field: 'deathsAll', 
+            width: 200 ,
+            filter: 'agNumberColumnFilter', 
+            floatingFilter: true,
+            filterParams: {
+                filterPlaceholder: 'Введите число...',
+            } as ITextFilterParams,  
+        },
+        { 
+            headerName: 'Количество случаев на 100000 жителей', 
+            field: 'Cumulative_number_for_14_days_of_COVID-19_cases_per_100000', 
+            width: 300 ,
+            filter: 'agNumberColumnFilter', 
+            floatingFilter: true, 
+            filterParams: {
+                defaultOption: 'greaterThan',
+                filterPlaceholder: 'Введите число...',
+              } as ITextFilterParams,  },
+        { 
+            headerName: 'Количество смертей на 100000 жителей', 
+            field: 'Cumulative_number_Deaths_for_14_days_of_COVID_19_cases_per_100000', 
+            width: 300,
+            filter: 'agNumberColumnFilter', 
+            floatingFilter: true,
+            filterParams: {
+                defaultOption: 'greaterThan',
+                filterPlaceholder: 'Введите число...',
+              } as ITextFilterParams,   
+        }
     ];
 
-
     // useEffect(() => {
-    //     
+        
     //         makeTable(data, vStart, vEnd);
         
-    // }, []);
+    // }, [data]);
+
+    const defaultColDef = useMemo<ColDef>(() => {
+        return {
+          flex: 1,
+          minWidth: 150,
+          wrapHeaderText: true,
+          autoHeaderHeight: true,
+        };
+    }, []);  
+
+    const resetState = useCallback(() => {
+        gridRef.current!.api.setFilterModel(null);
+        console.log('column state reset');
+    }, []);
 
     const  makeTable = (dataSer: any, start: any, end: any) => {
 
@@ -62,14 +139,18 @@ const  Table = () => {
         let cntryAll = []; 
         let record: any = [];
         let arrayData: any = [];
+        let isTime: any = [];
         // let arrayColumns: any = [];
 
 
         if (dataSer !== undefined) {
 
-            const vStart = dayjs(start).format('YYYY/MM/DD');
-            const vEnd = dayjs(end).format('YYYY/MM/DD');
-
+            const vStart = dayjs(start).format('YYYY-MM-DD');
+            const vEnd = dayjs(end).format('YYYY-MM-DD');
+            isTime = [vStart, vEnd];
+            localStorage.setItem('isTime', JSON.stringify(isTime));
+            console.log(localStorage.getItem('isTime'), "localStorage");
+            
             record = dataSer.records;
             console.log(record, "record");
             //Adding id---------------------------------
@@ -101,6 +182,20 @@ const  Table = () => {
                 // console.log(array, "array");
                 
                 array.reverse();
+
+
+                let count: any = -1;
+                for (let index = 13; index < array.length; index++) {
+                    let all: number = 0
+                    count++;
+                    for (let j = 13; j > 0; j--) {
+                        all += array[j + count].deaths;
+                        
+                    }
+                    array[index].Cumulative_number_Deaths_for_14_days_of_COVID_19_cases_per_100000 = ((all / array[index].popData2019)*100000).toFixed(8);
+                }  
+
+
                 arrayData.push(...array);
             }
             console.log(arrayData,'arrayData');
@@ -112,10 +207,14 @@ const  Table = () => {
                 arrayData.forEach((item: any, i: any, array: any) => 
                 {
                     if (item.countriesAndTerritories === iterator) {
+
+           
+
                         countCases += array[i].cases;
                         item.casesAll = countCases;
                         countDeaths += array[i].deaths;
                         item.deathsAll = countDeaths;
+
                     } 
                 });
                 countDeaths = 0;
@@ -127,38 +226,36 @@ const  Table = () => {
 
     }
 
-    const clearFilters = () => {
-        const input = document.querySelector("input[type='search']")as HTMLInputElement | null;
-        const filter = document.querySelector("div.MuiDataGrid-panel");
-// MuiInputBase-input MuiInput-input MuiInputBase-inputTypeSearch MuiInputBase-inputAdornedStart MuiInputBase-inputAdornedEnd css-c63i49-MuiInputBase-input-MuiInput-input
-// MuiPopper-root MuiDataGrid-panel css-n3z9fz-MuiPopper-root-MuiDataGrid-panel"
-        // input.innerHTML = "ss";
+    const getDisplayedRowCount = useCallback(() => {
+        var count = gridRef.current!.api.getDisplayedRowCount();
+        // console.log('getDisplayedRowCount() => ' + count);
+        if (gridRef.current !== null) {
+            
 
-        if (input != null) {
-            input.value = "";
-          
+            if (count === 0) {
+                gridRef.current!.api.showNoRowsOverlay();
+            } else {
+                gridRef.current!.api.hideOverlay();
+            }
         }
-
-        console.log(filter, "filter");
         
-        
-    }
+    }, []);
 
-    // makeTable(data, vStart, vEnd);
-
+    makeTable(data, vStart, vEnd);
+    // getDisplayedRowCount();
     return(  
         <>  
-            <Container style={{padding: "12px"}}>
-                <Row>
+            <Container style={{paddingTop: "12px"}}>
+                <Row style={{paddingTop: "12px"}}>
                     <Col>
-                        <DropdownButton id="dropdown-basic-button" title="Dropdown button">
-                            <Dropdown.Item><Link to="/">Таблица</Link></Dropdown.Item>
-                            <Dropdown.Item><Link to="/function">График</Link></Dropdown.Item>
+                        <DropdownButton id="dropdown-basic-button" title="Выберите способ изображения">
+                            <Dropdown.Item><Link to="/" className="link-offset-2 link-underline link-underline-opacity-0 link-primary">Таблица</Link></Dropdown.Item>
+                            <Dropdown.Item><Link to="/function" className="link-offset-2 link-underline link-underline-opacity-0 link-info link-info">График</Link></Dropdown.Item>
                         </DropdownButton>
                     </Col>
                 </Row>
-                <Row>
-                    <Col>
+                <Row className="grid gap-1 column-gap-3row justify-content-evenly" style={{paddingTop: "20px", paddingBottom: "20px"}}>
+                    <Col className="col-3">
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <DatePicker
                             label="Значение от"
@@ -172,7 +269,11 @@ const  Table = () => {
                                     setStart(newValue);
                                 }
                             }}
-                            /> 
+                            />
+                            </LocalizationProvider>
+                    </Col>
+                    <Col className="col-3"> 
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <DatePicker
                             label="Значение до"
                             value={vEnd}
@@ -188,36 +289,31 @@ const  Table = () => {
                             />
                         </LocalizationProvider>
                     </Col>
-                    
-                </Row>
-                <Row>
                     <Col>
-                        <Button variant="outline-warning" onClick={()=> clearFilters()}>Очистить фильтры</Button>{' '}
+                        <Button variant="outline-warning" onClick={resetState}>Очистить фильтры</Button>{' '}
                     </Col>
                 </Row>
-                <Row>
-                    <Col>
-                        <div style={{ height: 500, width: '100%'}}>
-                            <DataGrid 
-                                // columnMenuClearIcon
-                                // quickFilterClearIcon
-                                rows={rows} 
-                                columns={columns}
-                                // disableExportSelector
-                                slots={{ toolbar: GridToolbarFilterButton }}
-                                slotProps={{
-                                toolbar: {
-                                    showquickfilter: true,
-                                },
-                                }}  
+                <Row> 
+                    <Col className="mb-2">
+                        <div className="ag-theme-quartz" style={{ height: 500 }}>
+                            <AgGridReact 
+                                ref={gridRef}
+                                rowData={rows} 
+                                columnDefs={columns}
+                                pagination={true}
+                                paginationAutoPageSize={true}
+                                defaultColDef={defaultColDef}
+                                onFilterChanged = {getDisplayedRowCount}
+                                overlayNoRowsTemplate={
+                                    '<span style="padding: 10px; border: 2px solid #666; background: #55AA77">Ничего не найдено</span>'
+                                  }
                             />
-                        </div>
+                        </div>  
                     </Col>
-                </Row>
-                
+                </Row>    
             </Container>
-        </>
-      
+                
+            </>
     );
 }
 
