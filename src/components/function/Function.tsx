@@ -12,6 +12,9 @@ import dayjs, { Dayjs } from 'dayjs';
 import { AgChartsReact } from 'ag-charts-react';
 import { AgChartOptions } from 'ag-charts-community';
 import {useFetch} from "../hooks/useFetch";
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 
 
@@ -20,15 +23,11 @@ const Function = () => {
     const chartRef = useRef<AgChartsReact>(null);
     const { data, error } = useFetch("https://opendata.ecdc.europa.eu/covid19/casedistribution/json/");
     const [selectValue, setSelect] = useState("Все страны");
-    const isTime = useReadLocalStorage('isTime')
-    let charData: any = []
-    // useEffect(() => {
-    //     makeFunction(data);
-    // }, [data])
-
-    // handleChange(event) {
-    //     setState({value: event.target.value});
-    //  }
+    const [vStart, setStart] = useState<Dayjs | null>(dayjs('2019-12-31'));
+    const [vEnd, setEnd] = useState<Dayjs | null>(dayjs('2020-12-14'));
+    const minDate = dayjs("2019-12-31");
+    const maxDate = dayjs('2020-12-14');
+    let charData: any = [];
 
     const AllCntry = (dataSer: any) => {
         if (dataSer !== undefined) {
@@ -48,12 +47,6 @@ const Function = () => {
 
             console.log(cntryAll, "AllCntry");
 
-            // for (const iterator of cntryAll) {
-            //     if (iterator === 'Все страны') {
-            //         allItems = <Dropdown.Item aria-selected>{iterator}</Dropdown.Item>;
-            //     }
-            //     allItems = <Dropdown.Item>{iterator}/Dropdown.Item>;
-            // }
             const result = cntryAll.map((item: any): any => {
                 return <option value={item}>{item}</option>;
             });
@@ -69,43 +62,24 @@ const Function = () => {
         setSelect(event.target.value);
     }
 
-    const makeFunction = (dataSer: any, isTime: any, select: string|"") => {
+    const makeFunction = (dataSer: any, vStart: any, vEnd: any, select: string | "") => {
         
         let countCases: number = 0;
         let countDeaths: number = 0;
         let cntryAll = []; 
         let record: any = [];
         let arrayData: any = [];
-        let arrdataChartNew = [];
-        let vStart = "";
-        let vEnd = "";
-        // let istime =  JSON.parse(localStorage.getItem('isTime'));
 
-        console.log(isTime, "localStorage");
-        console.log(select, "select");
-        
-        // let arrdataChart = [];
-        // let arrayColumns: any = [];
-
-        // type dataChart = {
-        //     country: string;
-        //     date: string;
-        //     deathsMonth: number;
-        //     casesMonth: number;
-        // }
 
         if (dataSer !== undefined) {
             console.log(data, "data");
-
-            vStart = dayjs("2019-12-31").format('YYYY-MM-DD');
-            vEnd = dayjs("2020-12-14").format('YYYY-MM-DD');
 
             record = dataSer.records;
             console.log(record, "record");
 
             const dateReg = record.filter((item:any, i: any, array:any): any => {
                 const [day, month, year] = item.dateRep.split('/');
-                return dayjs(`${year}-${month}-${day}`).isBetween(`${isTime[0]}`, `${isTime[1]}`, 'day', '[]');
+                return dayjs(`${year}-${month}-${day}`).isBetween(`${vStart.format('YYYY-MM-DD')}`, `${vEnd.format('YYYY-MM-DD')}`, 'day', '[]');
             });
             console.log(dateReg, "dateReg");
             cntryAll = record.map((item: any) => {
@@ -159,9 +133,6 @@ const Function = () => {
             const arrdataChart = arrayData.filter((item: any) => {
                 const [day, month, year] = item.dateRep.split('/');
                 const daysInMonth = dayjs(`${year}-${month}-${day}`).daysInMonth()
-                // if(year ){
-
-                // }
                 return item.day === String(daysInMonth) || (item.day === "14" && item.month === "12");
             });
 
@@ -195,7 +166,7 @@ const Function = () => {
             title: {
                 text: 'Заболеваемость и смерти COVID-19',
             },
-            data: makeFunction(data, isTime, selectValue),
+            data: makeFunction(data, vStart, vEnd, selectValue),
             series: [
                 {
                     type: 'line',
@@ -242,6 +213,42 @@ const Function = () => {
                                 <Dropdown.Item><Link to="/" className="link-offset-2 link-underline link-underline-opacity-0 link-info" >Таблица</Link></Dropdown.Item>
                                 <Dropdown.Item><Link to="/function" className="link-offset-2 link-underline link-underline-opacity-0 link-primary">График</Link></Dropdown.Item>
                             </DropdownButton>
+                        </Col>
+                    </Row>
+                    <Row className="grid gap-1 column-gap-3row justify-content-evenly" style={{paddingTop: "20px", paddingBottom: "20px"}}>
+                        <Col className="col-3">
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DatePicker
+                                label="Значение от"
+                                value={vStart}
+                                format="DD-MM-YYYY"
+                                defaultValue={dayjs('2019-12-31')}//yyyy-mm-dd
+                                minDate={minDate}
+                                maxDate={maxDate}
+                                onChange={(newValue, context) =>{ 
+                                    if (context.validationError == null) {
+                                        setStart(newValue);
+                                    }
+                                }}
+                                />
+                            </LocalizationProvider>
+                        </Col>
+                        <Col className="col-3"> 
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DatePicker
+                                label="Значение до"
+                                value={vEnd}
+                                format="DD-MM-YYYY"
+                                defaultValue={dayjs('2020-12-14')}
+                                minDate={minDate}
+                                maxDate={maxDate}
+                                onChange={(newValue, context) =>{ 
+                                    if (context.validationError == null) {
+                                        setEnd(newValue);
+                                    }
+                                }}
+                                />
+                            </LocalizationProvider>
                         </Col>
                     </Row>
                     <Row style={{paddingBottom: "20px", paddingTop: "20px"}}>

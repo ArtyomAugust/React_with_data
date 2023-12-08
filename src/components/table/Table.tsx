@@ -13,8 +13,6 @@ import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { AgGridReact } from 'ag-grid-react';
 import {
     ColDef,
-    IFilterPlaceholderFunctionParams,
-    INumberFilterParams,
     ITextFilterParams,
 } from 'ag-grid-community';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
