@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from 'react-router-dom';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
-import {Container, Row, Col, DropdownButton, Dropdown, Form}from 'react-bootstrap';
+import {Container, Row, Col, DropdownButton, Dropdown, Form, Button}from 'react-bootstrap';
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min"
 import dayjs, { Dayjs } from 'dayjs';
@@ -25,9 +25,16 @@ const Function = () => {
     const [selectValue, setSelect] = useState("Все страны");
     const [vStart, setStart] = useState<Dayjs | null>(dayjs('2019-12-31'));
     const [vEnd, setEnd] = useState<Dayjs | null>(dayjs('2020-12-14'));
+    const [vResBtn, setResBtn] = useState(false);
     const minDate = dayjs("2019-12-31");
     const maxDate = dayjs('2020-12-14');
     let charData: any = [];
+
+    useEffect(() => {
+        
+        resetTimeBool(vStart, vEnd);        
+        
+    }, [vStart, vEnd]);
 
     const AllCntry = (dataSer: any) => {
         if (dataSer !== undefined) {
@@ -60,6 +67,20 @@ const Function = () => {
 
     const handleSelect = (event: any) => {
         setSelect(event.target.value);
+    }
+
+    const resetTimeBool = (vStart: any, vEnd: any) => {
+        console.log(vStart,"resetTimeBool");
+        if (vStart.format('DD/MM/YYYY') !== dayjs('2019-12-31').format('DD/MM/YYYY') || vEnd.format('DD/MM/YYYY') !== dayjs('2020-12-14').format('DD/MM/YYYY')) {
+            setResBtn(true);
+        }
+    }
+    const resetTime = () => {
+        setStart(dayjs("2019-12-31"));
+        setEnd(dayjs('2020-12-14'));
+    }
+    const MakeButtonRes = () => {
+        return <Button variant="outline-warning" onClick={() => {resetTime(); setResBtn(false)}}>Отобразить все данные</Button>;
     }
 
     const makeFunction = (dataSer: any, vStart: any, vEnd: any, select: string | "") => {
@@ -215,8 +236,8 @@ const Function = () => {
                             </DropdownButton>
                         </Col>
                     </Row>
-                    <Row className="grid gap-1 column-gap-3row justify-content-evenly" style={{paddingTop: "20px", paddingBottom: "20px"}}>
-                        <Col className="col-3">
+                    <Row className="grid column-gap-1row justify-content-evenly" style={{paddingTop: "20px", paddingBottom: "20px"}}>
+                        <Col className="col-2">
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 <DatePicker
                                 label="Значение от"
@@ -233,7 +254,7 @@ const Function = () => {
                                 />
                             </LocalizationProvider>
                         </Col>
-                        <Col className="col-3"> 
+                        <Col className="col-2"> 
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 <DatePicker
                                 label="Значение до"
@@ -249,6 +270,9 @@ const Function = () => {
                                 }}
                                 />
                             </LocalizationProvider>
+                        </Col>
+                        <Col>
+                            {vResBtn ? <MakeButtonRes /> : ""}
                         </Col>
                     </Row>
                     <Row style={{paddingBottom: "20px", paddingTop: "20px"}}>

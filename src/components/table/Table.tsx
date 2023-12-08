@@ -306,7 +306,7 @@ const  Table = () => {
                         </LocalizationProvider>
                     </Col>
                     <Col>
-                            {vResBtn ? <MakeButtonRes /> : ""}
+                        {vResBtn ? <MakeButtonRes /> : ""}
                     </Col>
                     <Col>
                         <Button variant="outline-warning" onClick={resetState}>Очистить фильтры</Button>{' '}
