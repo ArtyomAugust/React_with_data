@@ -16,8 +16,6 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 
-
-
 const Function = () => {
     const { data} = useFetch("https://opendata.ecdc.europa.eu/covid19/casedistribution/json/");
     const [selectValue, setSelect] = useState("Все страны");
@@ -26,7 +24,6 @@ const Function = () => {
     const [vResBtn, setResBtn] = useState(false);
     const minDate = dayjs("2019-12-31");
     const maxDate = dayjs('2020-12-14');
-    let charData: any = [];
 
     useEffect(() => {
         
@@ -36,23 +33,19 @@ const Function = () => {
 
     const AllCntry = (dataSer: any) => {
         if (dataSer !== undefined) {
-            
 
             let cntryAll = dataSer.records.map((item: any) => {
                 return item.countriesAndTerritories;
-            });
-            
-            cntryAll = cntryAll.filter((value: any, index: any, self: any) => {
+            }).filter((value: any, index: any, self: any) => {
                 return self.indexOf(value) === index;
             });
             
-            cntryAll.push('Все страны');
-            cntryAll.reverse();
+            cntryAll.unshift('Все страны');
 
             console.log(cntryAll, "AllCntry");
-
+            let count = 0;
             const result = cntryAll.map((item: any): any => {
-                return <option value={item}>{item}</option>;
+                return <option key={count++} value={item}>{item}</option>;
             });
             return (
                 <Form.Select className="mt-5 m-auto w-50 border border-danger-subtle" onChange={(event) => handleSelect(event)}>
@@ -85,66 +78,66 @@ const Function = () => {
         let countCases: number = 0;
         let countDeaths: number = 0;
         let cntryAll = []; 
-        let record: any = [];
         let arrayData: any = [];
 
 
         if (dataSer !== undefined) {
-            console.log(data, "data");
 
-            record = dataSer.records;
-            console.log(record, "record");
-
-            const dateReg = record.filter((item:any, i: any, array:any): any => {
+            const dateReg = dataSer.records.filter((item:any): any => {
                 const [day, month, year] = item.dateRep.split('/');
                 return dayjs(`${year}-${month}-${day}`).isBetween(`${vStart.format('YYYY-MM-DD')}`, `${vEnd.format('YYYY-MM-DD')}`, 'day', '[]');
             });
-            console.log(dateReg, "dateReg");
-            cntryAll = record.map((item: any) => {
+
+            cntryAll = dateReg.map((item: any) => {
                 return item.countriesAndTerritories;
-            });
-            
-            cntryAll = cntryAll.filter((value: any, index: any, self: any) => {
+            }).filter((value: any, index: any, self: any) => {
                 return self.indexOf(value) === index;
             });
 
+            console.log(cntryAll, "cntryAll makeFunction");
+
             if (select === "Все страны") {
                  for (const iterator of cntryAll) {
-                const array = dateReg.filter( (elem: any) => {  
-                    return elem.countriesAndTerritories === iterator;  
-                });
-                // console.log(array, "array");
-                
+                        const array = dateReg.filter( (elem: any) => {  
+                        return elem.countriesAndTerritories === iterator;  
+                    });
                     array.reverse();
+
+                    array.forEach((item: any, i: any, array: any) => {
+                            if (item.countriesAndTerritories === iterator) {
+                                countCases += array[i].cases;
+                                item.casesAll = countCases;
+                                countDeaths += array[i].deaths;
+                                item.deathsAll = countDeaths;
+                            } 
+                    });
+                    countDeaths = 0;
+                    countCases = 0;
+
+                    
                     arrayData.push(...array);
                 }
             } else {
                 const array = dateReg.filter( (elem: any) => {  
                     return elem.countriesAndTerritories === select;  
                 });
-                // console.log(array, "array");
                 
                     array.reverse();
-                    arrayData.push(...array);
-            }
-            console.log(arrayData , "arrayData");
-        
-           
 
-
-            for (const iterator of cntryAll) {
-                
-                arrayData.forEach((item: any, i: any, array: any) => {
-                        if (item.countriesAndTerritories === iterator) {
+                    array.forEach((item: any, i: any, array: any) => {
+                        if (item.countriesAndTerritories === select) {
                             countCases += array[i].cases;
                             item.casesAll = countCases;
                             countDeaths += array[i].deaths;
                             item.deathsAll = countDeaths;
                         } 
                     });
-                countDeaths = 0;
-                countCases = 0;
+                    countDeaths = 0;
+                    countCases = 0;
+
+                    arrayData.push(...array);
             }
+            console.log(arrayData , "arrayData");
 
             const arrdataChart = arrayData.filter((item: any) => {
                 const [day, month, year] = item.dateRep.split('/');
@@ -164,19 +157,18 @@ const Function = () => {
             return a;
         },[])
 
-        const arrObject =  arrdataChartNew.map((item: any, ind:any, array:any) => {
+        const arrObject =  arrdataChartNew.map((item: any) => {
             const [day, month, year] = item.dateRep.split('/');
-            return {dateRep: new Date(year, month, 0), casesAll: item.casesAll, deathsAll: item.deathsAll};
+            return {id:item.id, dateRep: new Date(year, month, 0), casesAll: item.casesAll, deathsAll: item.deathsAll};
         });
-            console.log(arrdataChartNew, 'arrdataChartNew');
             console.log(arrObject, 'arrObject');
                 
-            return charData = [...arrObject]
+            return [...arrObject]
+
         }
     }
 
     const ChartLine = () => {
-        console.log(charData, "charData");
         
         const [options] = useState<AgChartOptions>({
             title: {

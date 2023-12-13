@@ -34,8 +34,6 @@ const  Table = () => {
     const minDate = dayjs("2019-12-31");
     const maxDate = dayjs('2020-12-14');
     let rows: any = [];
-    console.log(dayjs(vStart).format('DD/MM/YYYY'),"timeS");
-    console.log(dayjs(vEnd).format('DD/MM/YYYY'), "timeE")
 
     const columns: ColDef[] = [
         { 
@@ -127,12 +125,10 @@ const  Table = () => {
 
     const resetState = useCallback(() => {
         gridRef.current!.api.setFilterModel(null);
-        console.log('column state reset');
     }, []);
 
 
     const resetTimeBool = (vStart: any, vEnd: any) => {
-        console.log(vStart,"resetTimeBool");
         if (vStart.format('DD/MM/YYYY') !== dayjs('2019-12-31').format('DD/MM/YYYY') || vEnd.format('DD/MM/YYYY') !== dayjs('2020-12-14').format('DD/MM/YYYY')) {
             setResBtn(true);
         }
@@ -150,35 +146,33 @@ const  Table = () => {
         let countCases: number = 0;
         let countDeaths: number = 0;
         let cntryAll = []; 
-        let record: any = [];
         let arrayData: any = [];
 
-        
+
         if (dataSer !== undefined) {
 
             const vStart = dayjs(start).format('YYYY-MM-DD');
             const vEnd = dayjs(end).format('YYYY-MM-DD');
             
-            record = dataSer.records;
-            console.log(record, "record");
+
             //Adding id---------------------------------
-            record.forEach((item:any, i: any): any => {
+            dataSer.records.forEach((item:any, i: any): any => {
                 item.id = i + 1;
             });
 
-            const dateReg = record.filter((item:any, i: any): any => {
+            const dateReg = dataSer.records.filter((item:any): any => {
                 const [day, month, year] = item.dateRep.split('/');
                 return dayjs(`${year}-${month}-${day}`).isBetween(`${vStart}`, `${vEnd}`, 'day', '[]');
             });
-            console.log(dateReg, "dateReg");
-            cntryAll = record.map((item: any) => {
+
+            cntryAll = dateReg.map((item: any) => {
                 return item.countriesAndTerritories;
-            });
-            
-            cntryAll = cntryAll.filter((value: any, index: any, self: any) => {
+            }).filter((value: any, index: any, self: any) => {
                 return self.indexOf(value) === index;
-            });           
-            
+            });       
+
+            console.log(cntryAll, "cntryAll");
+
             for (const iterator of cntryAll) {
                 const array = dateReg.filter( (elem: any) => {  
                     return elem.countriesAndTerritories === iterator;  
@@ -198,14 +192,7 @@ const  Table = () => {
                     array[index].Cumulative_number_Deaths_for_14_days_of_COVID_19_cases_per_100000 = ((all / array[index].popData2019)*100000).toFixed(8);
                 }  
 
-
-                arrayData.push(...array);
-            }
-            console.log(arrayData,'arrayData');
-            
-            for (const iterator of cntryAll) {
-                
-                arrayData.forEach((item: any, i: any, array: any) => 
+                array.forEach((item: any, i: any, array: any) => 
                 {
                     if (item.countriesAndTerritories === iterator) {
                         countCases += array[i].cases;
@@ -217,7 +204,11 @@ const  Table = () => {
                 });
                 countDeaths = 0;
                 countCases = 0;
+
+                arrayData.push(...array);
             }
+            console.log(arrayData,'arrayData');
+            
             rows = [...arrayData];
             
         }
