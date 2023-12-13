@@ -171,8 +171,6 @@ const  Table = () => {
                 return self.indexOf(value) === index;
             });       
 
-            console.log(cntryAll, "cntryAll");
-
             for (const iterator of cntryAll) {
                 const array = dateReg.filter( (elem: any) => {  
                     return elem.countriesAndTerritories === iterator;  
@@ -207,7 +205,6 @@ const  Table = () => {
 
                 arrayData.push(...array);
             }
-            console.log(arrayData,'arrayData');
             
             rows = [...arrayData];
             
