@@ -1,7 +1,6 @@
 /* eslint-disable no-loop-func */
 import "./Function.css";
-import { useReadLocalStorage } from 'usehooks-ts'
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect} from "react";
 import { Link } from 'react-router-dom';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
@@ -10,7 +9,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min"
 import dayjs, { Dayjs } from 'dayjs';
 import { AgChartsReact } from 'ag-charts-react';
-import { AgChartOptions } from 'ag-charts-community';
+import { AgChartOptions} from 'ag-charts-community';
 import {useFetch} from "../hooks/useFetch";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -20,8 +19,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 
 const Function = () => {
-    const chartRef = useRef<AgChartsReact>(null);
-    const { data, error } = useFetch("https://opendata.ecdc.europa.eu/covid19/casedistribution/json/");
+    const { data} = useFetch("https://opendata.ecdc.europa.eu/covid19/casedistribution/json/");
     const [selectValue, setSelect] = useState("Все страны");
     const [vStart, setStart] = useState<Dayjs | null>(dayjs('2019-12-31'));
     const [vEnd, setEnd] = useState<Dayjs | null>(dayjs('2020-12-14'));
@@ -50,7 +48,6 @@ const Function = () => {
             
             cntryAll.push('Все страны');
             cntryAll.reverse();
-            let allItems: any = [];
 
             console.log(cntryAll, "AllCntry");
 
@@ -110,9 +107,7 @@ const Function = () => {
             cntryAll = cntryAll.filter((value: any, index: any, self: any) => {
                 return self.indexOf(value) === index;
             });
-            // console.log(cntryAll,'cntryAll');
-            // const [day, month, year] = '23/05/2020'.split('/');
-            // const datee = dayjs(`${year}-${month}-${day}`).isBetween('2019-12-31', '2020-12-14', 'day', '[]');
+
             if (select === "Все страны") {
                  for (const iterator of cntryAll) {
                 const array = dateReg.filter( (elem: any) => {  
@@ -183,7 +178,7 @@ const Function = () => {
     const ChartLine = () => {
         console.log(charData, "charData");
         
-        const [options, setOptions] = useState<AgChartOptions>({
+        const [options] = useState<AgChartOptions>({
             title: {
                 text: 'Заболеваемость и смерти COVID-19',
             },

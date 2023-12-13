@@ -4,9 +4,9 @@ import { Link } from 'react-router-dom';
 import {Button, Container, Row, Col, DropdownButton, Dropdown  }from 'react-bootstrap';
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
-import useSWR, { mutate } from 'swr';
+import useSWR from 'swr';
 import dayjs, { Dayjs } from 'dayjs';
-import * as isBetween from 'dayjs/plugin/isBetween';
+import isBetween from 'dayjs/plugin/isBetween';
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
@@ -24,10 +24,9 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 const  Table = () => {
 
     const fetcher =(url: string )=> fetch(url).then(r => r.json())
-    const { data, error, isLoading, mutate } = useSWR("https://opendata.ecdc.europa.eu/covid19/casedistribution/json/", fetcher);
-    mutate(data);
+    const { data} = useSWR("https://opendata.ecdc.europa.eu/covid19/casedistribution/json/", fetcher);
+
     const gridRef = useRef<AgGridReact>(null);
-    // const [isTime, setTime] = useLocalStorage('isTime', true);
     const [vStart, setStart] = useState<Dayjs | null>(dayjs('2019-12-31'));
     const [vEnd, setEnd] = useState<Dayjs | null>(dayjs('2020-12-14'));
     const [vResBtn, setResBtn] = useState(false);
@@ -153,17 +152,12 @@ const  Table = () => {
         let cntryAll = []; 
         let record: any = [];
         let arrayData: any = [];
-        let isTime: any = [];
-        // let arrayColumns: any = [];
 
-
+        
         if (dataSer !== undefined) {
 
             const vStart = dayjs(start).format('YYYY-MM-DD');
             const vEnd = dayjs(end).format('YYYY-MM-DD');
-            isTime = [vStart, vEnd];
-            localStorage.setItem('isTime', JSON.stringify(isTime));
-            console.log(localStorage.getItem('isTime'), "localStorage");
             
             record = dataSer.records;
             console.log(record, "record");
@@ -183,17 +177,12 @@ const  Table = () => {
             
             cntryAll = cntryAll.filter((value: any, index: any, self: any) => {
                 return self.indexOf(value) === index;
-            });
-            // console.log(cntryAll,'cntryAll');
-            // const [day, month, year] = '23/05/2020'.split('/');
-            // const datee = dayjs(`${year}-${month}-${day}`).isBetween('2019-12-31', '2020-12-14', 'day', '[]');
-            
+            });           
             
             for (const iterator of cntryAll) {
                 const array = dateReg.filter( (elem: any) => {  
                     return elem.countriesAndTerritories === iterator;  
                   });
-                // console.log(array, "array");
                 
                 array.reverse();
 
@@ -214,16 +203,11 @@ const  Table = () => {
             }
             console.log(arrayData,'arrayData');
             
-            
-            // console.log(cntryAll, "cntryAll");
             for (const iterator of cntryAll) {
                 
                 arrayData.forEach((item: any, i: any, array: any) => 
                 {
                     if (item.countriesAndTerritories === iterator) {
-
-           
-
                         countCases += array[i].cases;
                         item.casesAll = countCases;
                         countDeaths += array[i].deaths;
@@ -242,10 +226,7 @@ const  Table = () => {
 
     const getDisplayedRowCount = useCallback(() => {
         var count = gridRef.current!.api.getDisplayedRowCount();
-        // console.log('getDisplayedRowCount() => ' + count);
         if (gridRef.current !== null) {
-            
-
             if (count === 0) {
                 gridRef.current!.api.showNoRowsOverlay();
             } else {
@@ -258,7 +239,6 @@ const  Table = () => {
     
 
     makeTable(data, vStart, vEnd);
-    // getDisplayedRowCount();
     return(  
         <>  
             <Container style={{paddingTop: "12px"}}>
